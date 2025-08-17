@@ -13,7 +13,7 @@
     </tr>
 </table>
 
-**[ReadMe EN clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/main/Readme_EN.md)**
+**[ReadMe EN clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/main/Readme.md)**
 
 Una blueprint per Home Assistant per una gestione ottimale e automatizzata del tuo climatizzatore, focalizzata su comfort e risparmio energetico.
 
