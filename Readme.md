@@ -13,7 +13,7 @@
     </tr>
 </table>
 
-**[ReadMe IT clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/main/Readme_IT.md)**
+**[ReadMe IT clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/v1.5.3/Readme_IT.md)**
 
 A Home Assistant blueprint for optimal and automated management of your air conditioner, focused on comfort and energy savings.
 

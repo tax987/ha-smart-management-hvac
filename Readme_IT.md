@@ -3,7 +3,7 @@
 <table width="100%">
     <tr>
         <td valign="top">
-            <b>Versione:</b> 1.5.3<br>
+            <b>Versione:</b> 1.5.3 <br>
             <b>Ultimo aggiornamento:</b> 18 Agosto 2025
         </td>
         <td style="text-align: right; vertical-align: top;">
