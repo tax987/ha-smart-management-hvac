@@ -7,7 +7,7 @@
             <b>Ultimo aggiornamento:</b> 18 Agosto 2025
         </td>
         <td style="text-align: right; vertical-align: top;">
-            <a href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml" target="_blank" rel="noreferrer noopener">
+            <a target="_blank" href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml" rel="noreferrer noopener">
             <img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
         </td>
     </tr>
