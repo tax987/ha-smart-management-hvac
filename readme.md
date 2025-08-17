@@ -65,14 +65,15 @@ Questa blueprint combina il monitoraggio costante della temperatura ambiente con
 
 Prima di importare e utilizzare questa blueprint, assicurati di avere:
 
+* Un **sensore di temperatura** nel tuo ambiente.
+* Un'**entità `climate`** che controlla il tuo climatizzatore.
+* **FONDAMENTALE:** Un **Aiutante (Helper) di tipo `Toggle (interruttore)`** creato in Home Assistant, che userai come interruttore master per abilitare/disabilitare l'automazione. Puoi crearlo da: `Impostazioni` ⚙️ > `Dispositivi e Servizi` > `Aiutanti` > `Crea aiutante` > `Toggle (interruttore)`. Dagli un nome riconoscibile, es. `Interruttore Master Clima`.
+
+
 | Entità | Stato |
 |:---|:---|
 | Daikin Onecta | ✔️ (Testato) |
 | Climate Generico | ❓ (Potrebbe funzionare) |
-
-* Un **sensore di temperatura** nel tuo ambiente.
-* Un'**entità `climate`** che controlla il tuo climatizzatore.
-* **FONDAMENTALE:** Un **Aiutante (Helper) di tipo `Toggle (interruttore)`** creato in Home Assistant, che userai come interruttore master per abilitare/disabilitare l'automazione. Puoi crearlo da: `Impostazioni` ⚙️ > `Dispositivi e Servizi` > `Aiutanti` > `Crea aiutante` > `Toggle (interruttore)`. Dagli un nome riconoscibile, es. `Interruttore Master Clima`.
 
 ---
 
