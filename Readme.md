@@ -98,7 +98,7 @@ Before importing and using this blueprint, make sure you have:
 | `turn_off_timer_end` | Timer in minutes to turn off the unit at the end of the time window. Set to `0` to disable. | `number` | No | `0` |
 | `enable_notifications` | Enable or disable the sending of notifications. | `boolean` | No | `true` |
 | `notification_service` | Service to send status messages to (e.g., `notify.mobile_app_your_phone`). | `text` | No | `notify.persistent_notification` |
-| `language` | The language for notifications (`it` or `en`). | `select` | No | `it` |
+| `language` | The language for notifications (`it` or `en`). | `select` | No | `en` |
 
 ---
 

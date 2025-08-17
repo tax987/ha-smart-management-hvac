@@ -13,7 +13,7 @@
     </tr>
 </table>
 
-**[ReadMe EN clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/main/Readme.md)**
+**[ReadMe EN clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/v1.5.3/Readme.md)**
 
 Una blueprint per Home Assistant per una gestione ottimale e automatizzata del tuo climatizzatore, focalizzata su comfort e risparmio energetico.
 
@@ -98,7 +98,7 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 | `turn_off_timer_end` | Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a `0` per disabilitare. | `number` | No | `0` |
 | `enable_notifications` | Attiva o disattiva l'invio di notifiche. | `boolean` | No | `true` |
 | `notification_service` | Servizio a cui inviare messaggi di stato (es. `notify.mobile_app_tuo_telefono`). | `text` | No | `notify.persistent_notification` |
-| `language` | La lingua delle notifiche (`it` o `en`). | `select` | No | `it` |
+| `language` | La lingua delle notifiche (`it` o `en`). | `select` | No | `en` |
 
 ---
 
