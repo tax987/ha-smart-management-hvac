@@ -1,0 +1,480 @@
+blueprint:
+  name: "Gestione Clima Smart v1.4.1"
+  description: "Gestisce il climatizzatore per mantenere la temperatura target, spegnendosi o passando alla ventola, e riattivandosi se la temperatura sale. Include un master switch e timer configurabili."
+  domain: automation
+  input:
+    master_enable:
+      name: Abilita Gestione Smart
+      description: Seleziona l'interruttore (input_boolean) per attivare o disattivare completamente la gestione intelligente del clima.
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+    climate_entity:
+      name: Climatizzatore
+      selector:
+        entity:
+          domain: climate
+    temperature_sensor:
+      name: Sensore Temperatura Ambiente
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    target_temperature:
+      name: Temperatura Target (°C)
+      description: La temperatura desiderata.
+      selector:
+        number:
+          min: 16
+          max: 30
+          step: 0.5
+          unit_of_measurement: "°C"
+          mode: box
+    turn_off_offset:
+      name: Offset Spegnimento/Ventola (°C)
+      description: Di quanti gradi la temp. deve SCENDERE sotto il target prima del cambio modalità (es. 1°C).
+      default: 1
+      selector:
+        number:
+          min: 0.1
+          max: 5
+          step: 0.1
+          unit_of_measurement: "°C"
+          mode: box
+    turn_on_offset:
+      name: Offset Riattivazione Clima (°C)
+      description: Di quanti gradi la temp. deve SALIRE sopra il target prima della riattivazione (es. 1.5°C).
+      default: 1.5
+      selector:
+        number:
+          min: 0.1
+          max: 5
+          step: 0.1
+          unit_of_measurement: "°C"
+          mode: box
+    initial_climate_mode:
+      name: Modalità Iniziale Clima
+      description: La modalità operativa quando il clima si attiva (es. 'cool', 'heat', 'heat_cool').
+      selector:
+        select:
+          options:
+            - "auto"
+            - "cool"
+            - "heat"
+            - "heat_cool"
+            - "dry"
+            - "fan_only"
+            - "off"
+          mode: dropdown
+    low_power_mode:
+      name: Modalità a Basso Consumo
+      description: La modalità in cui il clima passa al raggiungimento del target (es. 'fan_only', 'off').
+      selector:
+        select:
+          options:
+            - "dry"
+            - "fan_only"
+            - "off"
+          mode: dropdown
+    turn_off_timer_eco:
+      name: Timer Spegnimento Basso Consumo (minuti)
+      description: Timer in minuti per spegnere l'unità dopo essere entrata in modalità a basso consumo. Imposta a 0 per disabilitare.
+      selector:
+        number:
+          min: 0
+          max: 120
+          step: 1
+          unit_of_measurement: "minuti"
+          mode: slider
+      default: 0
+    start_time:
+      name: Orario Inizio (opzionale)
+      description: L'ora in cui la gestione si attiva (es. 23:00). Lascia vuoto per attivazione manuale.
+      selector:
+        time:
+      default: null
+    end_time:
+      name: Orario Fine (opzionale)
+      description: L'ora a cui la gestione deve terminare (es. 07:00). Lascia vuoto per disattivazione manuale.
+      selector:
+        time:
+      default: null
+    end_of_time_action:
+      name: Azione a Fine Temporizzazione
+      description: Scegli l'azione da eseguire al termine dell'orario.
+      selector:
+        select:
+          options:
+            - "off"
+            - "dry"
+            - "cool"
+            - "fan_only"
+            - "auto"
+          mode: dropdown
+      default: "off"
+    turn_off_timer_end:
+      name: Timer Spegnimento a Fine Orario (minuti)
+      description: Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a 0 per disabilitare.
+      selector:
+        number:
+          min: 0
+          max: 120
+          step: 1
+          unit_of_measurement: "minuti"
+          mode: slider
+      default: 0
+    enable_notifications:
+      name: Abilita Notifiche
+      description: Attiva o disattiva l'invio di notifiche.
+      selector:
+        boolean:
+    notification_service:
+      name: Servizio Notifica
+      description: Inserisci il nome del servizio di notifica (es. 'notify.mobile_app_tuo_telefono').
+      selector:
+        text:
+      default: "notify.persistent_notification"
+      
+variables:
+  master_enable: !input master_enable
+  climate_entity: !input climate_entity
+  temp_sensor: !input temperature_sensor
+  target_temp: !input target_temperature
+  turn_off_offset: !input turn_off_offset
+  turn_on_offset: !input turn_on_offset
+  turn_off_temp: "{{ states(temp_sensor) | float(0) <= (target_temp - turn_off_offset) }}"
+  turn_on_temp: "{{ states(temp_sensor) | float(0) >= (target_temp + turn_on_offset) }}"
+  initial_mode: !input initial_climate_mode
+  low_power_mode: !input low_power_mode
+  enable_notifications: !input enable_notifications
+  notification_service: !input notification_service
+  input_start_time: !input start_time
+  input_end_time: !input end_time
+  end_of_time_action: !input end_of_time_action
+  turn_off_timer_eco: !input turn_off_timer_eco
+  turn_off_timer_end: !input turn_off_timer_end
+
+trigger:
+  - platform: state
+    entity_id: !input temperature_sensor
+    id: "temperature_change" 
+  - platform: homeassistant
+    event: start
+    id: "ha_start" 
+  - platform: time
+    at: !input start_time
+    enabled: "{{ iif(input_start_time is not none, true, false) }}"
+    id: "time_start"
+  - platform: time
+    at: !input end_time
+    enabled: "{{ iif(input_end_time is not none, true, false) }}"
+    id: "time_end"
+  - platform: time_pattern
+    minutes: "/5"
+    id: "time_periodic_check"
+    enabled: "{{ iif(input_start_time is not none and input_end_time is not none, true, false) }}"
+  - platform: state
+    entity_id: !input master_enable
+    to: "on"
+    id: "master_enable_on"
+  - platform: state
+    entity_id: !input master_enable
+    to: "off"
+    id: "master_enable_off"
+  - platform: state
+    entity_id: !input climate_entity
+    to: "off"
+    from:
+      - "cool"
+      - "heat"
+      - "dry"
+      - "fan_only"
+      - "heat_cool"
+      - "auto"
+    id: "climate_off_manual"
+    
+condition: []
+
+action:
+  - choose:
+      # Azioni per l'accensione manuale, sempre eseguite
+      - conditions:
+          - condition: trigger
+            id: "master_enable_on"
+        sequence:
+          # Aggiunta: imposta la modalità iniziale del climatizzatore all'attivazione
+          - service: "climate.set_hvac_mode"
+            data:
+              hvac_mode: "{{ initial_mode }}"
+            target:
+              entity_id: "{{ climate_entity }}"
+          - delay:
+              seconds: 2
+          - if:
+              - condition: template
+                value_template: "{{ initial_mode in ['cool', 'heat', 'auto', 'heat_cool'] }}"
+            then:
+              - service: "climate.set_temperature"
+                data:
+                  temperature: "{{ target_temp }}"
+                target:
+                  entity_id: "{{ climate_entity }}"
+          # Fine aggiunta
+          - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+            then:
+              - service: "{{ notification_service }}"
+                data:
+                  title: "Gestione Clima Smart"
+                  message: >
+                    ✅ Attivato Gestione Clima Smart su {{ state_attr(climate_entity, 'friendly_name') }}.
+                    L'automazione si avvierà {{ 'alle ' ~ input_start_time if input_start_time is not none else 'manualmente' }}
+                    con modalità {{ initial_mode }} e terminerà {{ 'alle ' ~ input_end_time if input_end_time is not none else 'manualmente' }}
+                    passando a modalità {{ end_of_time_action }}.
+            else:
+              - service: system_log.write
+                data:
+                  message: "Tentativo di notifica all'attivazione manuale fallito: servizio di notifica non valido o non configurato."
+                  level: warn
+      # Azione per lo spegnimento manuale, sempre eseguita
+      - conditions:
+          - condition: trigger
+            id: "master_enable_off"
+        sequence:
+          - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+            then:
+              - service: "{{ notification_service }}"
+                data:
+                  message: "🔴 Funzione Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} disattivata manualmente."
+          - service: "climate.turn_off"
+            target:
+              entity_id: "{{ climate_entity }}"
+          - service: system_log.write
+            data:
+              message: "Master Enable disattivato per Gestione Clima Smart {{ state_attr(climate_entity, 'friendly_name') }}. Automazione terminata."
+              level: info
+      # Disattivazione automatica del master_enable se il clima viene spento manualmente
+      - conditions:
+          - condition: trigger
+            id: "climate_off_manual"
+          - condition: template
+            value_template: "{{ is_state(master_enable, 'on') }}"
+        sequence:
+          - service: "input_boolean.turn_off"
+            target:
+              entity_id: "{{ master_enable }}"
+          - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+            then:
+              - service: "{{ notification_service }}"
+                data:
+                  message: "⚠️ Rilevato spegnimento manuale di {{ state_attr(climate_entity, 'friendly_name') }}. Automazione 'Gestione Clima Smart' disattivata per prevenire conflitti."
+
+  # Secondo blocco 'choose' per le azioni automatiche (basate su orario e temperatura)
+  - choose:
+      - conditions:
+          - and:
+              - condition: template
+                value_template: "{{ is_state(master_enable, 'on') }}"
+              - condition: template
+                value_template: >
+                  {% if input_start_time is not none and input_end_time is not none %}
+                    {% set start_hour = input_start_time.split(':')[0] | int(0) %}
+                    {% set start_minute = input_start_time.split(':')[1] | int(0) %}
+                    {% set end_hour = input_end_time.split(':')[0] | int(0) %}
+                    {% set end_minute = input_end_time.split(':')[1] | int(0) %}
+                    
+                    {% set start_minutes = start_hour * 60 + start_minute %}
+                    {% set end_minutes = end_hour * 60 + end_minute %}
+                    {% set current_time = now().hour * 60 + now().minute %}
+
+                    {% if start_minutes < end_minutes %}
+                      {{ current_time >= start_minutes and current_time < end_minutes }}
+                    {% else %}
+                      {{ current_time >= start_minutes or current_time < end_minutes }}
+                    {% endif %}
+                  {% else %}
+                    true
+                  {% endif %}
+              - or:
+                  - condition: trigger
+                    id: ha_start
+                  - condition: trigger
+                    id: time_start
+                  - condition: trigger
+                    id: temperature_change
+        sequence:
+          - if:
+              - condition: template
+                value_template: "{{ turn_on_temp }}"
+            then:
+              - service: "climate.set_hvac_mode"
+                data:
+                  hvac_mode: "{{ initial_mode }}"
+                target:
+                  entity_id: "{{ climate_entity }}"
+              - delay:
+                  seconds: 2
+              - if:
+                  - condition: template
+                    value_template: "{{ initial_mode in ['cool', 'heat', 'auto', 'heat_cool'] }}"
+                then:
+                  - service: "climate.set_temperature"
+                    data:
+                      temperature: "{{ target_temp }}"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+              - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                then:
+                  - service: "{{ notification_service }}"
+                    data:
+                      title: "Gestione Clima Smart"
+                      message: |
+                        {% if trigger.id == 'ha_start' or trigger.id == 'time_start' %}
+                          😴 Gestione Clima Smart attivata.
+                        {% else %}
+                          🌡️ Temperatura in rialzo. Riattivazione climatizzatore.
+                        {% endif %}
+                else:
+                  - service: system_log.write
+                    data:
+                      message: "Tentativo di notifica per riattivazione fallito: servizio di notifica non valido o non configurato."
+                      level: warn
+      - conditions:
+          - and:
+              - condition: template
+                value_template: "{{ is_state(master_enable, 'on') }}"
+              - condition: trigger
+                id: temperature_change
+              - condition: template
+                value_template: "{{ turn_off_temp }}"
+              - condition: template
+                value_template: >
+                  {{ states(climate_entity) != low_power_mode and
+                    (state_attr(climate_entity, 'hvac_action') != 'off' or low_power_mode != 'off')
+                  }}
+        sequence:
+          - service: "climate.set_hvac_mode"
+            data:
+              hvac_mode: "{{ low_power_mode }}"
+            target:
+              entity_id: "{{ climate_entity }}"
+          - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+            then:
+              - service: "{{ notification_service }}"
+                data:
+                  title: "Gestione Clima Smart"
+                  message: "🌙 Temperatura comfort raggiunta. Clima in modalità a basso consumo."
+            else:
+              - service: system_log.write
+                data:
+                  message: "Tentativo di notifica per modalità a basso consumo fallito: servizio di notifica non valido o non configurato."
+                  level: warn
+          # Aggiunto il timer di spegnimento per la modalità a basso consumo
+          - if: "{{ turn_off_timer_eco > 0 }}"
+            then:
+              - delay: "{{ turn_off_timer_eco | int(0) * 60 }}"
+              - service: "climate.turn_off"
+                target:
+                  entity_id: "{{ climate_entity }}"
+              - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                then:
+                  - service: "{{ notification_service }}"
+                    data:
+                      title: "Gestione Clima Smart"
+                      message: "💤 Il climatizzatore si è spento dopo {{ turn_off_timer_eco | int(0) }} minuti di modalità a basso consumo."
+
+      - conditions:
+          - and:
+              - condition: template
+                value_template: "{{ is_state(master_enable, 'on') }}"
+              - condition: trigger
+                id: "time_end"
+        sequence:
+          - choose:
+              - conditions:
+                  - and:
+                    - condition: template
+                      value_template: "{{ end_of_time_action == 'off' }}"
+                    - condition: template
+                      value_template: "{{ turn_off_timer_end > 0 }}"
+                sequence:
+                  - service: "climate.set_hvac_mode"
+                    data:
+                      hvac_mode: "fan_only"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+                  - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                    then:
+                      - service: "{{ notification_service }}"
+                        data:
+                          message: >
+                            Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata.
+                            L'unità passerà a ventola e si spegnerà tra {{ turn_off_timer_end | int(0) }} minuti.
+                  - delay: "{{ turn_off_timer_end | int(0) * 60 }}"
+                  - service: "climate.turn_off"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+                  - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                    then:
+                      - service: "{{ notification_service }}"
+                        data:
+                          message: "💤 Il climatizzatore si è spento a fine orario."
+              - conditions:
+                  - condition: template
+                    value_template: "{{ end_of_time_action == 'off' }}"
+                sequence:
+                  - service: "climate.turn_off"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+                  - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                    then:
+                      - service: "{{ notification_service }}"
+                        data:
+                          message: >
+                            Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}). Modalità finale: {{ end_of_time_action }}.
+              - conditions:
+                  - condition: template
+                    value_template: "{{ end_of_time_action != 'off' }}"
+                sequence:
+                  - service: "climate.set_hvac_mode"
+                    data:
+                      hvac_mode: "{{ end_of_time_action }}"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+                  - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+                    then:
+                      - service: "{{ notification_service }}"
+                        data:
+                          message: >
+                            Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}). Modalità finale: {{ end_of_time_action }}.
+            default: []
+    default:
+      # Logging actions also check if the master enable is on.
+      - if:
+          - condition: template
+            value_template: "{{ is_state(master_enable, 'on') }}"
+          - or:
+              - condition: trigger
+                id: ha_start
+              - condition: trigger
+                id: time_start
+              - condition: trigger
+                id: time_periodic_check
+              - condition: trigger
+                id: master_enable_on
+        then:
+          - service: system_log.write
+            data:
+              message: >
+                {% if trigger.id == 'ha_start' %}
+                  Automazione Gestione Clima Smart avviata per {{ state_attr(climate_entity, 'friendly_name') }}. Monitoraggio temperatura.
+                {% elif trigger.id == 'time_start' %}
+                  Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} attivata dall'orario ({{ input_start_time | default('Orario non specificato') }}).
+                {% elif trigger.id == 'time_periodic_check' %}
+                  Controllo periodico clima per {{ state_attr(climate_entity, 'friendly_name') }} (temp {{ states(temp_sensor) }}°C).
+                {% elif trigger.id == 'master_enable_on' %}
+                  Master Enable attivato per Gestione Clima Smart {{ state_attr(climate_entity, 'friendly_name') }}. Valutazione immediata.
+                {% endif %}
+              level: info
+
+mode: single
