@@ -3,11 +3,11 @@
 <table width="100%">
     <tr>
         <td valign="top">
-            <b>Versione:</b> 1.5.0<br>
+            <b>Versione:</b> 1.5.3<br>
             <b>Ultimo aggiornamento:</b> 18 Agosto 2025
         </td>
         <td style="text-align: right; vertical-align: top;">
-            <a target="_blank" href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml" rel="noreferrer noopener">
+            <a target="_blank" href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.5.3/ha-smart-management-hvac.yaml" rel="noreferrer noopener">
             <img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
         </td>
     </tr>
@@ -108,7 +108,7 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 
 2. Clicca su **"Importa Blueprint"** in alto a destra.
 
-3. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://raw.githubusercontent.com/tax987/ha-smart-management-hvac/v1.4.1/ha-smart-management-hvac.yaml`.
+3. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://raw.githubusercontent.com/tax987/ha-smart-management-hvac/v1.5.3/ha-smart-management-hvac.yaml`.
 
 4. Clicca su "PREVIEW BLUEPRINT" e poi su "IMPORT BLUEPRINT".
 

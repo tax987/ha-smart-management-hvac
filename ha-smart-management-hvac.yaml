@@ -1,9 +1,9 @@
 blueprint:
-  name: "Smart Climate Management v1.5.2 / Gestione Clima Smart v1.5.2"
+  name: "Smart Climate Management / Gestione Clima Smart - v.1.5.3"
   description: "Manages the air conditioner to maintain the target temperature, turning off or switching to fan mode, and reactivating if the temperature rises. Includes a master switch and configurable timers. / Gestisce il climatizzatore per mantenere la temperatura target, spegnendosi o passando alla ventola, e riattivandosi se la temperatura sale. Include un master switch e timer configurabili."
   domain: automation
   author: Massimo Querzolo
-  source_url: https://github.com/tax987/ha-smart-management-hvac/blob/v1.5.2/ha-smart-management-hvac.yaml
+  source_url: https://github.com/tax987/ha-smart-management-hvac/blob/v1.5.3/ha-smart-management-hvac.yaml
   input:
     master_enable:
       name: "Enable Smart Management / Abilita Gestione Smart"
@@ -144,9 +144,9 @@ blueprint:
       selector:
         select:
           options:
-            - name: "🇺🇸 English"
+            - label: "🇺🇸 English"
               value: "en"
-            - name: "🇮🇹 Italiano"
+            - label: "🇮🇹 Italiano"
               value: "it"
       
 variables:
