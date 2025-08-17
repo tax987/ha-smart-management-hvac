@@ -141,7 +141,7 @@ This blueprint is perfect for use at night, for those who don't want to wake up 
 
 ## 🔗 Links & Credits
 
-* **Home Assistant Community Discussion:** []
+* **Home Assistant Community Discussion:** [https://community.home-assistant.io/t/smart-climate-management/921658]
 * **GitHub Repository:** [https://github.com/tax987/ha-smart-management-hvac]
 
 Created with ❤️ by [Massimo Querzolo](https://massimoquerzolo.it)
