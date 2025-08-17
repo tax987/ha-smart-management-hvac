@@ -3,7 +3,7 @@
 <table width="100%">
     <tr>
         <td valign="top">
-            <b>Versione:</b> 1.4.1<br>
+            <b>Versione:</b> 1.5.0<br>
             <b>Ultimo aggiornamento:</b> 18 Agosto 2025
         </td>
         <td style="text-align: right; vertical-align: top;">
@@ -13,9 +13,11 @@
     </tr>
 </table>
 
+**[ReadMe EN clicca qui](https://github.com/tax987/ha-smart-management-hvac/blob/main/Readme_EN.md)**
+
 Una blueprint per Home Assistant per una gestione ottimale e automatizzata del tuo climatizzatore, focalizzata su comfort e risparmio energetico.
 
-NOTA: Questa blueprint è stata sviluppata e testata principalmente con l'integrazione Daikin Onecta (tramite HACS), ma potrebbe funzionare anche con altre marche di climatizzatori che hanno un'entità climate supportata da Home Assistant. In caso di problemi o suggerimenti, non esitare a contattare l'autore.
+NOTA: Questa blueprint supporta ora notifiche in più lingue. È stata sviluppata e testata principalmente con l'integrazione Daikin Onecta (tramite HACS), ma potrebbe funzionare anche con altre marche di climatizzatori che hanno un'entità climate supportata da Home Assistant. In caso di problemi o suggerimenti, non esitare a contattare l'autore.
 
 ---
 
@@ -70,7 +72,6 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 * Un'**entità `climate`** che controlla il tuo climatizzatore.
 * **FONDAMENTALE:** Un **Aiutante (Helper) di tipo `Toggle (interruttore)`** creato in Home Assistant, che userai come interruttore master per abilitare/disabilitare l'automazione. Puoi crearlo da: `Impostazioni` ⚙️ > `Dispositivi e Servizi` > `Aiutanti` > `Crea aiutante` > `Toggle (interruttore)`. Dagli un nome riconoscibile, es. `Interruttore Master Clima`.
 
-
 | Entità | Stato |
 |:---|:---|
 | Daikin Onecta | ✔️ (Testato) |
@@ -97,6 +98,7 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 | `turn_off_timer_end` | Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a `0` per disabilitare. | `number` | No | `0` |
 | `enable_notifications` | Attiva o disattiva l'invio di notifiche. | `boolean` | No | `true` |
 | `notification_service` | Servizio a cui inviare messaggi di stato (es. `notify.mobile_app_tuo_telefono`). | `text` | No | `notify.persistent_notification` |
+| `language` | La lingua delle notifiche (`it` o `en`). | `select` | No | `it` |
 
 ---
 
@@ -106,7 +108,7 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 
 2. Clicca su **"Importa Blueprint"** in alto a destra.
 
-3. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml`.
+3. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://raw.githubusercontent.com/tax987/ha-smart-management-hvac/v1.4.1/ha-smart-management-hvac.yaml`.
 
 4. Clicca su "PREVIEW BLUEPRINT" e poi su "IMPORT BLUEPRINT".
 
