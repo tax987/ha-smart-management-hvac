@@ -1,15 +1,16 @@
 # 🌬️ Gestione Clima Smart 🌬️
 
 <table width="100%">
-<tr>
-<td valign="top">
-<b>Versione:</b> 1.4.1<br>
-<b>Ultimo aggiornamento:</b> 18 Agosto 2025
-</td>
-<td style="text-align: right; vertical-align: top;">
-<a href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
-</td>
-</tr>
+    <tr>
+        <td valign="top">
+            <b>Versione:</b> 1.4.1<br>
+            <b>Ultimo aggiornamento:</b> 18 Agosto 2025
+        </td>
+        <td style="text-align: right; vertical-align: top;">
+            <a href="https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml" target="_blank" rel="noreferrer noopener">
+            <img src="https://my.home-assistant.io/badges/blueprint_import.svg" alt="Open your Home Assistant instance and show the blueprint import dialog with a specific blueprint pre-filled." /></a>
+        </td>
+    </tr>
 </table>
 
 Una blueprint per Home Assistant per una gestione ottimale e automatizzata del tuo climatizzatore, focalizzata su comfort e risparmio energetico.
@@ -101,23 +102,21 @@ Prima di importare e utilizzare questa blueprint, assicurati di avere:
 
 ## 🛠️ Installazione & Configurazione
 
-1. Assicurati di aver caricato il file della blueprint (`ha-smart-management-hvac.yaml`) nel tuo repository GitHub all'indirizzo `https://github.com/tax987/ha-smart-management-hvac/blob/main/ha-smart-management-hvac.yaml`.
+1. In Home Assistant, vai su **Impostazioni > Automazioni e Scene > Blueprints**.
 
-2. In Home Assistant, vai su **Impostazioni > Automazioni e Scene > Blueprints**.
+2. Clicca su **"Importa Blueprint"** in alto a destra.
 
-3. Clicca su **"Importa Blueprint"** in basso a destra.
+3. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://github.com/tax987/ha-smart-management-hvac/blob/v1.4.1/ha-smart-management-hvac.yaml`.
 
-4. Nel campo "URL della Blueprint", incolla il link **RAW** del tuo file YAML: `https://raw.githubusercontent.com/tax987/ha-smart-management-hvac/main/ha-smart-management-hvac.yaml`.
+4. Clicca su "PREVIEW BLUEPRINT" e poi su "IMPORT BLUEPRINT".
 
-5. Clicca su "PREVIEW BLUEPRINT" e poi su "IMPORT BLUEPRINT".
+5. Una volta importata, clicca su **"Crea automazione"** accanto al nome della blueprint.
 
-6. Una volta importata, clicca su **"Crea automazione"** accanto al nome della blueprint.
+6. **Compila attentamente tutti i campi, in particolare "Abilita Gestione" selezionando l'Aiutante `input_boolean` che hai creato.**
 
-7. **Compila attentamente tutti i campi, in particolare "Abilita Gestione" selezionando l'Aiutante `input_boolean` che hai creato.**
+7. Dai un nome alla tua nuova automazione e salvala.
 
-8. Dai un nome alla tua nuova automazione e salvala.
-
-9. **Testa l'automazione** accendendo/spegnendo l'interruttore master, simulando i cambiamenti di temperatura o forzando gli orari.
+8. **Testa l'automazione** accendendo/spegnendo l'interruttore master, simulando i cambiamenti di temperatura o forzando gli orari.
 
 ---
 
