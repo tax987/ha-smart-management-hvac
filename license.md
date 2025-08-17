@@ -1,4 +1,4 @@
-License for Home Assistant Blueprint: "Smart Climate Management"
+### **License for Home Assistant Blueprint: "Smart Climate Management"**
 Author: Massimo Querzolo
 Date: August 18, 2025
 Blueprint Version: 1.5.3
@@ -8,17 +8,13 @@ The Home Assistant blueprint "Smart Climate Management" and all its source code,
 
 2. Grant of License
 This license grants you permission to:
-
-Use the blueprint for personal, non-commercial purposes within your Home Assistant instance.
+- Use the blueprint for personal, non-commercial purposes within your Home Assistant instance.
 
 3. Restrictions on Use
 You are not authorized to:
-
-Distribute, copy, or republish this blueprint or its derivatives (forks, copies, modified versions) without the explicit and written authorization of the author.
-
-Use this blueprint for commercial purposes.
-
-Resell or in any way monetize this blueprint.
+- Distribute, copy, or republish this blueprint or its derivatives (forks, copies, modified versions) without the explicit and written authorization of the author.
+- Use this blueprint for commercial purposes.
+- Resell or in any way monetize this blueprint.
 
 4. Disclaimer of Warranty
 This blueprint is provided "as is" and without any warranty, express or implied. The author is not liable for any damages or malfunctions resulting from its use. Use of the blueprint is at your own risk.
@@ -26,9 +22,9 @@ This blueprint is provided "as is" and without any warranty, express or implied.
 5. Acceptance of Terms
 By using this blueprint, you accept and agree to abide by all the terms and conditions of this license.
 
--------------------------------------------------------------------------------------------------------------------
+---
 
-Licenza d'uso per Home Assistant Blueprint: "Gestione Clima Smart"
+### **Licenza d'uso per Home Assistant Blueprint: "Gestione Clima Smart"**
 Autore: Massimo Querzolo
 Data: 18 Agosto 2025
 Versione Blueprint: 1.5.3
@@ -38,17 +34,13 @@ L'Home Assistant blueprint "Gestione Clima Smart" e tutto il suo codice sorgente
 
 2. Concessione di Licenza
 Questa licenza ti concede il permesso di:
-
-Utilizzare la blueprint per scopi personali, non commerciali, all'interno della tua istanza di Home Assistant.
+- Utilizzare la blueprint per scopi personali, non commerciali, all'interno della tua istanza di Home Assistant.
 
 3. Restrizioni d'Uso
 Non sei autorizzato a:
-
-Distribuire, copiare o ripubblicare questa blueprint o sue derivazioni (fork, copie, versioni modificate) senza l'esplicita e scritta autorizzazione dell'autore.
-
-Utilizzare questa blueprint per scopi commerciali.
-
-Rivendere o monetizzare in qualsiasi modo questa blueprint.
+- Distribuire, copiare o ripubblicare questa blueprint o sue derivazioni (fork, copie, versioni modificate) senza l'esplicita e scritta autorizzazione dell'autore.
+- Utilizzare questa blueprint per scopi commerciali.
+- Rivendere o monetizzare in qualsiasi modo questa blueprint.
 
 4. Clausola di non Garanzia
 Questa blueprint è fornita "così com'è" e senza alcuna garanzia, esplicita o implicita. L'autore non è responsabile per eventuali danni o malfunzionamenti derivanti dal suo utilizzo. L'uso della blueprint avviene a tuo rischio e pericolo.
