@@ -130,6 +130,7 @@ This automation has been designed to fluidly manage state changes:
 * **Home Assistant Restart:** The logic restarts correctly after a system reboot, checking the current state and acting accordingly.
 * **Time Flexibility:** You can choose to have fully automated management based on times or control it manually via the master switch.
 * **Master Control:** The `input_boolean` master switch allows you to completely disable/enable the automation's logic at any time, even if the times are configured, acting as a true kill switch.
+* **External Turn Off:** The automation automatically turns off the Smart Management switch if the air conditioner is turned off externally (e.g., with the remote control), to prevent a "ghost" state where the blueprint thinks the climate is still active.
 
 ---
 

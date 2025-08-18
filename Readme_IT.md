@@ -39,7 +39,7 @@ Questa blueprint combina il monitoraggio costante della temperatura ambiente con
 1.  **Attiva il climatizzatore** nella modalità desiderata quando la temperatura è fuori range o all'inizio del periodo orario.
 2.  **Mantiene il comfort** fino al raggiungimento della temperatura target impostata.
 3.  **Passa a modalità "eco"** (ventola o spento) una volta raggiunta la temperatura target.
-4.  **Si riattiva automaticamente** se la temperatura ambiente supera una soglia definita sopra il target.
+4.  **Si riattiva automaticamente** se la temperatura ambiente sale sopra una soglia definita sopra il target.
 5.  **Permette la schedulazione** oraria per l'attivazione/disattivazione del monitoraggio.
 6.  Include un **interruttore master dedicato (un `input_boolean`)** per abilitare/disabilitare rapidamente tutta la logica.
 
@@ -130,6 +130,7 @@ Questa automazione è stata pensata per gestire fluidamente i cambi di stato:
 * **Riavvio di Home Assistant:** La logica si riavvia correttamente dopo un riavvio del sistema, verificando lo stato attuale e agendo di conseguenza.
 * **Flessibilità Oraria:** Puoi scegliere di avere una gestione completamente automatica basata sugli orari o controllarla manualmente tramite l'interruttore master.
 * **Controllo Master:** L'interruttore master `input_boolean` consente di disabilitare/abilitare completamente la logica dell'automazione in qualsiasi momento, anche se gli orari sono configurati, agendo come un vero kill switch.
+* **Spegnimento Esterno:** L'automazione spegne in automatico l'interruttore di Gestione Smart nel caso in cui il climatizzatore venga spento esternamente (es. dal telecomando), per evitare uno stato "fantasma" in cui la blueprint pensi che il clima sia ancora attivo.
 
 ---
 
