@@ -1,5 +1,5 @@
 blueprint:
-  name: "Smart Climate Management / Gestione Clima Smart - v1.5.3-final"
+  name: "Smart Climate Management / Gestione Clima Smart - v1.5.3"
   description: "Manages the air conditioner to maintain the target temperature, turning off or switching to fan mode, and reactivating if the temperature rises. Includes a master switch and configurable timers. / Gestisce il climatizzatore per mantenere la temperatura target, spegnendosi o passando alla ventola, e riattivandosi se la temperatura sale. Include un master switch e timer configurabili."
   domain: automation
   author: Massimo Querzolo
