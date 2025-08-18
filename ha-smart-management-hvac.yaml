@@ -1,5 +1,5 @@
 blueprint:
-  name: "Smart Climate Management / Gestione Clima Smart - v.1.5.3"
+  name: "Smart Climate Management / Gestione Clima Smart - v1.5.3-final"
   description: "Manages the air conditioner to maintain the target temperature, turning off or switching to fan mode, and reactivating if the temperature rises. Includes a master switch and configurable timers. / Gestisce il climatizzatore per mantenere la temperatura target, spegnendosi o passando alla ventola, e riattivandosi se la temperatura sale. Include un master switch e timer configurabili."
   domain: automation
   author: Massimo Querzolo
@@ -117,7 +117,7 @@ blueprint:
       default: "off"
     turn_off_timer_end:
       name: "End of Time Turn Off Timer (minutes) / Timer Spegnimento a Fine Orario (minuti)"
-      description: "Timer in minutes to turn off the unit at the end of the period. Set to 0 to disable. / Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a 0 per disabilitare."
+      description: "Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a 0 per disabilitare. / Timer in minuti per spegnere l'unità alla fine del periodo. Imposta a 0 per disabilitare."
       selector:
         number:
           min: 0
@@ -152,6 +152,7 @@ blueprint:
 variables:
   master_enable: !input master_enable
   climate_entity: !input climate_entity
+  climate_name: "{{ state_attr(climate_entity, 'friendly_name') }}"
   temp_sensor: !input temperature_sensor
   target_temp: !input target_temperature
   turn_off_offset: !input turn_off_offset
@@ -168,7 +169,7 @@ variables:
   turn_off_timer_eco: !input turn_off_timer_eco
   turn_off_timer_end: !input turn_off_timer_end
   language: !input language
-
+  
 trigger:
   - platform: state
     entity_id: !input temperature_sensor
@@ -207,70 +208,148 @@ trigger:
       - "heat_cool"
       - "auto"
     id: "climate_off_manual"
-    
-condition: []
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: "TURN_OFF_CLIMATE"
+    id: "notification_action_turn_off_climate"
+
+condition:
+  - condition: or
+    conditions:
+      - condition: trigger
+        id: "master_enable_on"
+      - condition: trigger
+        id: "master_enable_off"
+      - condition: trigger
+        id: "climate_off_manual"
+      - condition: trigger
+        id: "notification_action_turn_off_climate"
+      - condition: template
+        value_template: >
+          {% if input_start_time is not none and input_end_time is not none %}
+            {% set start_hour = input_start_time.split(':')[0] | int(0) %}
+            {% set start_minute = input_start_time.split(':')[1] | int(0) %}
+            {% set end_hour = input_end_time.split(':')[0] | int(0) %}
+            {% set end_minute = input_end_time.split(':')[1] | int(0) %}
+            
+            {% set start_minutes = start_hour * 60 + start_minute %}
+            {% set end_minutes = end_hour * 60 + end_minute %}
+            {% set current_time = now().hour * 60 + now().minute %}
+
+            {% if start_minutes < end_minutes %}
+              {{ current_time >= start_minutes and current_time < end_minutes }}
+            {% else %}
+              {{ current_time >= start_minutes or current_time < end_minutes }}
+            {% endif %}
+          {% else %}
+            true
+          {% endif %}
 
 action:
   - choose:
-      # Azioni per l'accensione manuale, sempre eseguite
+      # Azioni per l'attivazione manuale del master
       - conditions:
           - condition: trigger
             id: "master_enable_on"
         sequence:
-          - service: "climate.set_hvac_mode"
-            data:
-              hvac_mode: "{{ initial_mode }}"
-            target:
-              entity_id: "{{ climate_entity }}"
-          - delay:
-              seconds: 2
-          - if:
-              - condition: template
-                value_template: "{{ initial_mode in ['cool', 'heat', 'auto', 'heat_cool'] }}"
-            then:
-              - service: "climate.set_temperature"
-                data:
-                  temperature: "{{ target_temp }}"
-                target:
-                  entity_id: "{{ climate_entity }}"
+          # Verifica se le notifiche sono abilitate e il servizio è valido
           - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
             then:
               - choose:
+                # Caso lingua Inglese
                 - conditions:
                     - condition: template
                       value_template: "{{ language == 'en' }}"
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        title: "Smart Climate Management"
-                        message: >
-                          ✅ Smart Climate Management enabled on {{ state_attr(climate_entity, 'friendly_name') }}.
-                          The automation will start {{ 'at ' ~ input_start_time if input_start_time is not none else 'manually' }}
-                          in {{ initial_mode }} mode and will end {{ 'at ' ~ input_end_time if input_end_time is not none else 'manually' }}
-                          switching to {{ end_of_time_action }} mode.
+                        title: "SCM - {{ climate_name }}"
+                        message: |
+                          ✅ Smart Climate Management enabled.
+                          Target Temp: {{ target_temp }}°C (Offsets: +{{ turn_on_offset }}°C / -{{ turn_off_offset }}°C)
+                          Initial Mode: {{ initial_mode }}
+                          Low Power Mode: {{ low_power_mode }}
+                          {% if turn_off_timer_eco > 0 %} Low Power Timer: {{ turn_off_timer_eco }} minutes {% endif %}
+                          End of Time Action: {{ end_of_time_action }}
+                          {% if turn_off_timer_end > 0 %} End of Time Timer: {{ turn_off_timer_end }} minutes {% endif %}
+                # Caso lingua Italiana
                 - conditions:
                     - condition: template
                       value_template: "{{ language == 'it' }}"
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        title: "Gestione Clima Smart"
-                        message: >
-                          ✅ Attivato Gestione Clima Smart su {{ state_attr(climate_entity, 'friendly_name') }}.
-                          L'automazione si avvierà {{ 'alle ' ~ input_start_time if input_start_time is not none else 'manualmente' }}
-                          con modalità {{ initial_mode }} e terminerà {{ 'alle ' ~ input_end_time if input_end_time is not none else 'manualmente' }}
-                          passando a modalità {{ end_of_time_action }}.
+                        title: "GCS - {{ climate_name }}"
+                        message: |
+                          {% set start_time_display = input_start_time if input_start_time is not none else 'Non specificato' %}
+                          {% set end_time_display = input_end_time if input_end_time is not none else 'Non specificato' %}
+                          {% set is_in_time_window =
+                            (input_start_time is not none and input_end_time is not none) and
+                            (
+                              (start_time_display < end_time_display and now().strftime('%H:%M') >= start_time_display and now().strftime('%H:%M') < end_time_display) or
+                              (start_time_display > end_time_display and (now().strftime('%H:%M') >= start_time_display or now().strftime('%H:%M') < end_time_display))
+                            )
+                          %}
+                          ✅ Funzione Gestione Clima Smart attivata{{ ' fuori orario.' if not is_in_time_window else '.' }}
+                          Temperatura Set: {{ target_temp }}°C (Offset: +{{ turn_on_offset }}°C / -{{ turn_off_offset }}°C)
+                          Modalità Iniziale: {{ initial_mode }}
+                          Modalità Basso Consumo: {{ low_power_mode }}
+                          {% if turn_off_timer_eco > 0 %} Timer Basso Consumo: {{ turn_off_timer_eco }} minuti {% endif %}
+                          Modalità a fine orario: {{ end_of_time_action }}
+                          {% if turn_off_timer_end > 0 %} Timer a fine orario: {{ turn_off_timer_end }} minuti {% endif %}
             else:
+              # Log per notifica fallita
               - service: system_log.write
                 data:
                   message: "Tentativo di notifica all'attivazione manuale fallito: servizio di notifica non valido o non configurato."
                   level: warn
+          # Logica per accendere il clima se la temperatura è alta
+          - if: >
+              {% if input_start_time is not none and input_end_time is not none %}
+                {% set start_hour = input_start_time.split(':')[0] | int(0) %}
+                {% set start_minute = input_start_time.split(':')[1] | int(0) %}
+                {% set end_hour = input_end_time.split(':')[0] | int(0) %}
+                {% set end_minute = input_end_time.split(':')[1] | int(0) %}
+                
+                {% set start_minutes = start_hour * 60 + start_minute %}
+                {% set end_minutes = end_hour * 60 + end_minute %}
+                {% set current_time = now().hour * 60 + now().minute %}
 
-      # Azione per lo spegnimento manuale, sempre eseguita
+                {% if start_minutes < end_minutes %}
+                  {{ current_time >= start_minutes and current_time < end_minutes }}
+                {% else %}
+                  {{ current_time >= start_minutes or current_time < end_minutes }}
+                {% endif %}
+              {% else %}
+                true
+              {% endif %}
+            then:
+              - if: "{{ turn_on_temp }}"
+                then:
+                  - service: "climate.set_hvac_mode"
+                    data:
+                      hvac_mode: "{{ initial_mode }}"
+                    target:
+                      entity_id: "{{ climate_entity }}"
+                  - delay:
+                      seconds: 2
+                  - if:
+                      - condition: template
+                        value_template: "{{ initial_mode in ['cool', 'heat', 'auto', 'heat_cool'] }}"
+                    then:
+                      - service: "climate.set_temperature"
+                        data:
+                          temperature: "{{ target_temp }}"
+                        target:
+                          entity_id: "{{ climate_entity }}"
+
+      # Azioni per la disattivazione manuale del master
       - conditions:
           - condition: trigger
             id: "master_enable_off"
         sequence:
+          # Notifica di disattivazione sempre inviata
           - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
             then:
               - choose:
@@ -280,34 +359,42 @@ action:
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        message: "🔴 Smart Climate Management for {{ state_attr(climate_entity, 'friendly_name') }} manually disabled."
+                        title: "SCM - {{climate_name}}"
+                        message: "Smart Climate Management function deactivated."
                 - conditions:
                     - condition: template
                       value_template: "{{ language == 'it' }}"
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        message: "🔴 Funzione Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} disattivata manualmente."
-          - service: "climate.turn_off"
-            target:
-              entity_id: "{{ climate_entity }}"
-          - choose:
-            - conditions:
-                - condition: template
-                  value_template: "{{ language == 'en' }}"
-              sequence:
-                - service: system_log.write
-                  data:
-                    message: "Master Enable deactivated for Smart Climate Management {{ state_attr(climate_entity, 'friendly_name') }}. Automation terminated."
-                    level: info
-            - conditions:
-                - condition: template
-                  value_template: "{{ language == 'it' }}"
-              sequence:
-                - service: system_log.write
-                  data:
-                    message: "Master Enable disattivato per Gestione Clima Smart {{ state_attr(climate_entity, 'friendly_name') }}. Automazione terminata."
-                    level: info
+                        title: "GCS - {{climate_name}}"
+                        message: "Funzione Gestione Clima Smart disattivata."
+          
+          # Spegni il climatizzatore se è acceso
+          - if:
+              - condition: template
+                value_template: "{{ states(climate_entity) != 'off' }}"
+            then:
+              - service: "climate.turn_off"
+                target:
+                  entity_id: "{{ climate_entity }}"
+              - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ language == 'en' }}"
+                  sequence:
+                    - service: system_log.write
+                      data:
+                        message: "Master Enable deactivated for Smart Climate Management {{ climate_name }}. The climate was automatically turned off to prevent conflicts."
+                        level: info
+                - conditions:
+                    - condition: template
+                      value_template: "{{ language == 'it' }}"
+                  sequence:
+                    - service: system_log.write
+                      data:
+                        message: "Master Enable disattivato per Gestione Clima Smart {{ climate_name }}. Il clima è stato spento automaticamente per prevenire conflitti."
+          
       # Disattivazione automatica del master_enable se il clima viene spento manualmente
       - conditions:
           - condition: trigger
@@ -327,14 +414,40 @@ action:
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        message: "⚠️ Manual turn off of {{ state_attr(climate_entity, 'friendly_name') }} detected. 'Smart Climate Management' automation deactivated to prevent conflicts."
+                        message: "⚠️ Manual turn off of {{ climate_name }} detected. 'Smart Climate Management' automation deactivated to prevent conflicts."
                 - conditions:
                     - condition: template
                       value_template: "{{ language == 'it' }}"
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        message: "⚠️ Rilevato spegnimento manuale di {{ state_attr(climate_entity, 'friendly_name') }}. Automazione 'Gestione Clima Smart' disattivata per prevenire conflitti."
+                        message: "⚠️ Rilevato spegnimento manuale di {{ climate_name }}. Automazione 'Gestione Clima Smart' disattivata per prevenire conflitti."
+      
+      # Gestione della notifica interattiva (ora solo per il trigger di notifica)
+      - conditions:
+          - condition: trigger
+            id: "notification_action_turn_off_climate"
+        sequence:
+          - service: "climate.turn_off"
+            target:
+              entity_id: "{{ climate_entity }}"
+          - if: "{{ enable_notifications and notification_service is not none and notification_service != '' }}"
+            then:
+              - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ language == 'en' }}"
+                  sequence:
+                    - service: "{{ notification_service }}"
+                      data:
+                        message: "The climate unit has been turned off."
+                - conditions:
+                    - condition: template
+                      value_template: "{{ language == 'it' }}"
+                  sequence:
+                    - service: "{{ notification_service }}"
+                      data:
+                        message: "Il climatizzatore è stato spento."
 
   # Secondo blocco 'choose' per le azioni automatiche (basate su orario e temperatura)
   - choose:
@@ -369,6 +482,8 @@ action:
                     id: time_start
                   - condition: trigger
                     id: temperature_change
+                  - condition: trigger
+                    id: time_periodic_check
         sequence:
           - if:
               - condition: template
@@ -399,7 +514,7 @@ action:
                       sequence:
                         - service: "{{ notification_service }}"
                           data:
-                            title: "Smart Climate Management"
+                            title: "SCM - {{climate_name}}"
                             message: |
                               {% if trigger.id == 'ha_start' or trigger.id == 'time_start' %}
                                 😴 Smart Climate Management activated.
@@ -412,7 +527,7 @@ action:
                       sequence:
                         - service: "{{ notification_service }}"
                           data:
-                            title: "Gestione Clima Smart"
+                            title: "GCS - {{climate_name}}"
                             message: |
                               {% if trigger.id == 'ha_start' or trigger.id == 'time_start' %}
                                 😴 Gestione Clima Smart attivata.
@@ -465,7 +580,7 @@ action:
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        title: "Smart Climate Management"
+                        title: "SCM - {{climate_name}}"
                         message: "🌙 Comfort temperature reached. Climate in low power mode."
                 - conditions:
                     - condition: template
@@ -473,7 +588,7 @@ action:
                   sequence:
                     - service: "{{ notification_service }}"
                       data:
-                        title: "Gestione Clima Smart"
+                        title: "GCS - {{climate_name}}"
                         message: "🌙 Temperatura comfort raggiunta. Clima in modalità a basso consumo."
             else:
               - choose:
@@ -508,7 +623,7 @@ action:
                       sequence:
                         - service: "{{ notification_service }}"
                           data:
-                            title: "Smart Climate Management"
+                            title: "SCM - {{ climate_name }}"
                             message: "💤 The air conditioner turned off after {{ turn_off_timer_eco | int(0) }} minutes in low power mode."
                     - conditions:
                         - condition: template
@@ -516,7 +631,7 @@ action:
                       sequence:
                         - service: "{{ notification_service }}"
                           data:
-                            title: "Gestione Clima Smart"
+                            title: "GCS - {{ climate_name }}"
                             message: "💤 Il climatizzatore si è spento dopo {{ turn_off_timer_eco | int(0) }} minuti di modalità a basso consumo."
 
       - conditions:
@@ -549,7 +664,7 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Smart Climate Management for {{ state_attr(climate_entity, 'friendly_name') }} ended.
+                                  Smart Climate Management for {{ climate_name }} ended.
                                   The unit will switch to fan mode and turn off in {{ turn_off_timer_end | int(0) }} minutes.
                         - conditions:
                             - condition: template
@@ -558,7 +673,7 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata.
+                                  Gestione Clima Smart per {{ climate_name }} terminata.
                                   L'unità passerà a ventola e si spegnerà tra {{ turn_off_timer_end | int(0) }} minuti.
                   - delay: "{{ turn_off_timer_end | int(0) * 60 }}"
                   - service: "climate.turn_off"
@@ -598,7 +713,9 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Smart Climate Management for {{ state_attr(climate_entity, 'friendly_name') }} ended (End Time: {{ input_end_time if input_end_time is not none else 'manual deactivation' }}). Final mode: {{ end_of_time_action }}.
+                                  Smart Climate Management for {{ climate_name }} ended.
+                                  (End Time: {{ input_end_time if input_end_time is not none else 'manual deactivation' }}).
+                                  Final mode: {{ end_of_time_action }}.
                         - conditions:
                             - condition: template
                               value_template: "{{ language == 'it' }}"
@@ -606,7 +723,9 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}). Modalità finale: {{ end_of_time_action }}.
+                                  Gestione Clima Smart per {{ climate_name }} terminata
+                                  (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}).
+                                  Modalità finale: {{ end_of_time_action }}.
               - conditions:
                   - condition: template
                     value_template: "{{ end_of_time_action != 'off' }}"
@@ -626,7 +745,9 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Smart Climate Management for {{ state_attr(climate_entity, 'friendly_name') }} ended (End Time: {{ input_end_time if input_end_time is not none else 'manual deactivation' }}). Final mode: {{ end_of_time_action }}.
+                                  Smart Climate Management for {{ climate_name }} ended 
+                                  (End Time: {{ input_end_time if input_end_time is not none else 'manual deactivation' }}).
+                                  Final mode: {{ end_of_time_action }}.
                         - conditions:
                             - condition: template
                               value_template: "{{ language == 'it' }}"
@@ -634,7 +755,9 @@ action:
                             - service: "{{ notification_service }}"
                               data:
                                 message: >
-                                  Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} terminata (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}). Modalità finale: {{ end_of_time_action }}.
+                                  Gestione Clima Smart per {{ climate_name }} terminata
+                                  (Orario Fine: {{ input_end_time if input_end_time is not none else 'disattivazione manuale' }}).
+                                  Modalità finale: {{ end_of_time_action }}.
             default: []
     default:
       - if:
@@ -654,13 +777,13 @@ action:
             data:
               message: >
                 {% if trigger.id == 'ha_start' %}
-                  {% if language == 'en' %}Smart Climate Management automation started for {{ state_attr(climate_entity, 'friendly_name') }}. Monitoring temperature.{% elif language == 'it' %}Automazione Gestione Clima Smart avviata per {{ state_attr(climate_entity, 'friendly_name') }}. Monitoraggio temperatura.{% endif %}
+                  {% if language == 'en' %}Smart Climate Management automation started for {{ climate_name }}. Monitoring temperature.{% elif language == 'it' %}Automazione Gestione Clima Smart avviata per {{ climate_name }}. Monitoraggio temperatura.{% endif %}
                 {% elif trigger.id == 'time_start' %}
-                  {% if language == 'en' %}Smart Climate Management for {{ state_attr(climate_entity, 'friendly_name') }} activated by schedule ({{ input_start_time | default('Time not specified') }}).{% elif language == 'it' %}Gestione Clima Smart per {{ state_attr(climate_entity, 'friendly_name') }} attivata dall'orario ({{ input_start_time | default('Orario non specificato') }}).{% endif %}
+                  {% if language == 'en' %}Smart Climate Management for {{ climate_name }} activated by schedule ({{ input_start_time | default('Time not specified') }}).{% elif language == 'it' %}Gestione Clima Smart per {{ climate_name }} attivata dall'orario ({{ input_start_time | default('Orario non specificato') }}).{% endif %}
                 {% elif trigger.id == 'time_periodic_check' %}
-                  {% if language == 'en' %}Periodic climate check for {{ state_attr(climate_entity, 'friendly_name') }} (temp {{ states(temp_sensor) }}°C).{% elif language == 'it' %}Controllo periodico clima per {{ state_attr(climate_entity, 'friendly_name') }} (temp {{ states(temp_sensor) }}°C).{% endif %}
+                  {% if language == 'en' %}Periodic climate check for {{ climate_name }} (temp {{ states(temp_sensor) }}°C).{% elif language == 'it' %}Controllo periodico clima per {{ climate_name }} (temp {{ states(temp_sensor) }}°C).{% endif %}
                 {% elif trigger.id == 'master_enable_on' %}
-                  {% if language == 'en' %}Master Enable activated for Smart Climate Management {{ state_attr(climate_entity, 'friendly_name') }}. Immediate evaluation.{% elif language == 'it' %}Master Enable attivato per Gestione Clima Smart {{ state_attr(climate_entity, 'friendly_name') }}. Valutazione immediata.{% endif %}
+                  {% if language == 'en' %}Master Enable activated for Smart Climate Management {{ climate_name }}. Immediate evaluation.{% elif language == 'it' %}Master Enable attivato per Gestione Clima Smart {{ climate_name }}. Valutazione immediata.{% endif %}
                 {% endif %}
               level: info
 
